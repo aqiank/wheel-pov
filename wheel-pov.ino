@@ -2,7 +2,8 @@
 
 #define NUM_LEDS (24)
 #define NUM_STEPS (360)
-#define DATA_PIN (6)
+#define DATA_PIN (18)
+#define CLOCK_PIN (13)
 #define HALL_PIN (2)
 
 static const float RADIUS = 0.24; // meters
@@ -13,10 +14,15 @@ static unsigned long lastActivateTime, revolutionTime;
 static unsigned int kph;
 static bool bActivated;
 
-void setup() {
-	FastLED.addLeds<APA102>(leds, NUM_LEDS);
+static void updateLastActivateTime();
+static void updateLEDs();
+static unsigned int currentAngle();
+static bool isNearMagnet();
 
-	pinMode(HALL_PIN, INPUT_PULLUP);
+void setup() {
+	FastLED.addLeds<APA102, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
+
+	pinMode(HALL_PIN, INPUT);
 }
 
 void loop() {
@@ -29,9 +35,9 @@ void loop() {
 	delayMicroseconds((1000000 - processingTime) / NUM_STEPS);
 }
 
-void updateLastActivateTime() {
+static void updateLastActivateTime() {
 	bool bPrevActivated = bActivated;
-	bActivated = !digitalRead(HALL_PIN);
+	bActivated = isNearMagnet();
 
 	if (bActivated != bPrevActivated) {
 		if (bActivated) {
@@ -46,7 +52,7 @@ void updateLastActivateTime() {
 	}
 }
 
-void updateLEDs() {
+static void updateLEDs() {
 	unsigned int angle = currentAngle();
 
 	for (int i = 0; i < NUM_LEDS; i++) {
@@ -60,7 +66,7 @@ void updateLEDs() {
 	FastLED.show();
 }
 
-unsigned int currentAngle() {
+static unsigned int currentAngle() {
 	if (revolutionTime == 0) {
 		return 0;
 	}
@@ -71,4 +77,8 @@ unsigned int currentAngle() {
 	}
 
 	return PI * currentTime / revolutionTime;
+}
+
+static bool isNearMagnet() {
+	return digitalRead(HALL_PIN) == LOW;
 }
