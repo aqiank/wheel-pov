@@ -5,7 +5,7 @@ class WheelPOV {
 public:
 	virtual void init() = 0;
 	virtual void update() = 0;
-	virtual void clear() = 0;
+	virtual void clearLEDs() = 0;
 
 	void setHallPin(int hallPin);
 	void setRadius(int radius);
@@ -26,7 +26,7 @@ protected:
 	int mCircumference;
 	unsigned long mMaxRevolutionTime;
 
-	unsigned int mAngle;
+	unsigned int mAngle, mPrevAngle;
 	unsigned long mLastActivateTime;
 	unsigned long mRevolutionTime;
 

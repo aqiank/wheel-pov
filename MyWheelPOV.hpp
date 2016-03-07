@@ -9,7 +9,7 @@ public:
 
 	void init();
 	void update();
-	void clear();
+	void clearLEDs();
 
 protected:
 	void updateLEDs();

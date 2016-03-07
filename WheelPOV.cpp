@@ -8,7 +8,9 @@ void WheelPOV::init() {
 
 void WheelPOV::update() {
 	updateAngle();
-	updateLEDs();
+	if (mAngle != mPrevAngle && mRevolutionTime > 0) {
+		updateLEDs();
+	}
 }
 
 void WheelPOV::setHallPin(int hallPin) {
@@ -41,24 +43,23 @@ unsigned long WheelPOV::maxRevolutionTime() const {
 }
 
 void WheelPOV::updateAngle() {
+	const unsigned long now = millis();
 	const bool bPrevActivated = bActivated;
 	bActivated = isNearMagnet();
-
+	
 	if (bActivated != bPrevActivated) {
 		if (bActivated) {
-			const unsigned long now = millis();
-
-			if (now - mLastActivateTime > mMaxRevolutionTime) {
-				unsigned int elapsedTime = now - mRevolutionTime;
-				mRevolutionTime = elapsedTime;
-				elapsedTime -= (elapsedTime / 1000) * 1000;
-				mAngle = 360 * elapsedTime / mRevolutionTime;
-			} else {
-				clear();
-				mRevolutionTime = 0;
-			}
-
+			mRevolutionTime = now - mLastActivateTime;
 			mLastActivateTime = now;
+		}
+	}
+
+	if (mRevolutionTime > 0) {
+		const unsigned long angleTime = now - mLastActivateTime;
+		mAngle = (360 * angleTime / mRevolutionTime) % 360;
+		if (now - mLastActivateTime > mRevolutionTime) {
+			mRevolutionTime = 0;
+			clearLEDs();
 		}
 	}
 }
